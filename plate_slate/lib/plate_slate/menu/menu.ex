@@ -1,11 +1,11 @@
-#---
+# ---
 # Excerpted from "Craft GraphQL APIs in Elixir with Absinthe",
 # published by The Pragmatic Bookshelf.
 # Copyrights apply to this code. It may not be used to create training material,
 # courses, books, articles, and the like. Contact us if you are in doubt.
 # We make no guarantees that this code is fit for any purpose.
 # Visit http://www.pragmaticprogrammer.com/titles/wwgraphql for more book information.
-#---
+# ---
 defmodule PlateSlate.Menu do
   @moduledoc """
   The Menu context.
@@ -122,14 +122,19 @@ defmodule PlateSlate.Menu do
 
   """
 
-  def list_items(%{matching: name}) when is_binary(name) do
-    Item
-    |> where([m], ilike(m.name, ^"%#{name}%"))
-    |> Repo.all()
-  end
+  def list_items(filters) do
+    filters
+    |> Enum.reduce(Item, fn
+      {_, nil}, query ->
+        query
 
-  def list_items(_) do
-    Repo.all(Item)
+      {:order, order}, query ->
+        from q in query, order_by: {^order, :name}
+
+      {:matching, name}, query ->
+        from q in query, where: ilike(q.name, ^"%#{name}%")
+    end)
+    |> Repo.all()
   end
 
   @doc """

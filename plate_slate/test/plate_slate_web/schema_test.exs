@@ -13,8 +13,8 @@ defmodule PlateSlateWeb.Schema.Query.MenuItemsTest do
     PlateSlate.Data.seed()
   end
 
-  describe "query menu-items/0" do
-    test "menuItems field returns menu items" do
+  describe "query menu-items" do
+    test "given query, without any params, should return all items" do
       # arrange
       query = """
       {
@@ -34,29 +34,68 @@ defmodule PlateSlateWeb.Schema.Query.MenuItemsTest do
       expected_response = %{
         "data" => %{
           "menuItems" => [
-            %{"name" => "Reuben"},
-            %{"name" => "Croque Monsieur"},
-            %{"name" => "Muffuletta"},
             %{"name" => "Bánh mì"},
-            %{"name" => "Vada Pav"},
+            %{"name" => "Chocolate Milkshake"},
+            %{"name" => "Croque Monsieur"},
             %{"name" => "French Fries"},
-            %{"name" => "Papadum"},
-            %{"name" => "Pasta Salad"},
-            %{"name" => "Water"},
-            %{"name" => "Soft Drink"},
             %{"name" => "Lemonade"},
             %{"name" => "Masala Chai"},
+            %{"name" => "Muffuletta"},
+            %{"name" => "Papadum"},
+            %{"name" => "Pasta Salad"},
+            %{"name" => "Reuben"},
+            %{"name" => "Soft Drink"},
+            %{"name" => "Vada Pav"},
             %{"name" => "Vanilla Milkshake"},
-            %{"name" => "Chocolate Milkshake"}
+            %{"name" => "Water"}
           ]
         }
       }
 
       assert response == expected_response
     end
-  end
 
-  describe "query menu_items/1" do
+    test "given query, when it's has ordering, should return items ordered" do
+      # arrange
+      query = """
+      {
+        menuItems(order: DESC) {
+          name
+        }
+      }
+      """
+
+      # act
+      response =
+        build_conn()
+        |> get("/api", query: query)
+        |> json_response(200)
+
+      # assert
+      expected_response = %{
+        "data" => %{
+          "menuItems" => [
+            %{"name" => "Water"},
+            %{"name" => "Vanilla Milkshake"},
+            %{"name" => "Vada Pav"},
+            %{"name" => "Soft Drink"},
+            %{"name" => "Reuben"},
+            %{"name" => "Pasta Salad"},
+            %{"name" => "Papadum"},
+            %{"name" => "Muffuletta"},
+            %{"name" => "Masala Chai"},
+            %{"name" => "Lemonade"},
+            %{"name" => "French Fries"},
+            %{"name" => "Croque Monsieur"},
+            %{"name" => "Chocolate Milkshake"},
+            %{ "name" => "Bánh mì" }
+          ]
+        }
+      }
+
+      assert response == expected_response
+    end
+
     test "given query, when has `matching` filter, should filter by the value" do
       # arrange
       query = """
