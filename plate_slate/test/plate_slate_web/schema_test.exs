@@ -106,5 +106,28 @@ defmodule PlateSlateWeb.Schema.Query.MenuItemsTest do
 
       assert response == expected_response
     end
+
+    test "given query, when has `matching` filter from a variable, should filter by the variable" do
+      # arrange
+      query = """
+      query($term: String){
+        menuItems(matching: $term) {
+          name
+        }
+      }
+      """
+
+      variables = %{"term" => "reu"}
+
+      # act
+      response =
+        build_conn()
+        |> get("/api", query: query, variables: variables)
+        |> json_response(200)
+
+      # assert
+      expected_response = %{"data" => %{"menuItems" => [%{"name" => "Reuben"}]}}
+      assert response == expected_response
+    end
   end
 end
