@@ -140,6 +140,37 @@ defmodule PlateSlateWeb.Schema.Query.MenuItemsTest do
       assert response == expected_response
     end
 
+    test "given query, when has filter from date, should use scalar type `date` to filter" do
+      # arrange
+      sides = PlateSlate.Repo.get_by!(PlateSlate.Menu.Category, name: "Sides")
+      %PlateSlate.Menu.Item{
+        name: "Garlic Fries",
+        added_on: ~D[2017-01-01],
+        price: 2.50,
+        category: sides
+      } |> PlateSlate.Repo.insert!()
+
+      query = """
+      query($filter: MenuItemFilter!){
+        menuItems(filter: $filter) {
+          name
+        }
+      }
+      """
+
+      variables = %{filter: %{"addedBefore" => "2017-01-20"}}
+
+      # act
+      response =
+        build_conn()
+        |> get("/api", query: query, variables: variables)
+        |> json_response(200)
+
+      # assert
+      expected_response = %{"data" => %{"menuItems" => [%{"name" => "Garlic Fries"}]}}
+      assert response == expected_response
+    end
+
     test "given query, when has invalid filter, should return error" do
       # arrange
       query = """
