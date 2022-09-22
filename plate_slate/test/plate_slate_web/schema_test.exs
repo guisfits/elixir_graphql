@@ -88,7 +88,7 @@ defmodule PlateSlateWeb.Schema.Query.MenuItemsTest do
             %{"name" => "French Fries"},
             %{"name" => "Croque Monsieur"},
             %{"name" => "Chocolate Milkshake"},
-            %{ "name" => "Bánh mì" }
+            %{"name" => "Bánh mì"}
           ]
         }
       }
@@ -96,11 +96,11 @@ defmodule PlateSlateWeb.Schema.Query.MenuItemsTest do
       assert response == expected_response
     end
 
-    test "given query, when has `matching` filter, should filter by the value" do
+    test "given query, when has filters, should filter by those values" do
       # arrange
       query = """
         {
-          menuItems(matching: "reu") {
+          menuItems(filter: {category: "Sandwiches", tag: "Vegetarian"}) {
             name
           }
         }
@@ -113,15 +113,38 @@ defmodule PlateSlateWeb.Schema.Query.MenuItemsTest do
         |> json_response(200)
 
       # assert
-      expected_response = %{"data" => %{"menuItems" => [%{"name" => "Reuben"}]}}
+      expected_response = %{"data" => %{"menuItems" => [%{"name" => "Vada Pav"}]}}
       assert response == expected_response
     end
 
-    test "given query, when has `matching` with non string value, should return error" do
+    test "given query, when has filter from a variable, should filter by the variable values" do
+      # arrange
+      query = """
+      query($filter: MenuItemFilter!){
+        menuItems(filter: $filter) {
+          name
+        }
+      }
+      """
+
+      variables = %{filter: %{"tag" => "Vegetarian", "category" => "Sandwiches"}}
+
+      # act
+      response =
+        build_conn()
+        |> get("/api", query: query, variables: variables)
+        |> json_response(200)
+
+      # assert
+      expected_response = %{"data" => %{"menuItems" => [%{"name" => "Vada Pav"}]}}
+      assert response == expected_response
+    end
+
+    test "given query, when has invalid filter, should return error" do
       # arrange
       query = """
       {
-        menuItems(matching: 123) {
+        menuItems(filter: 123) {
           name
         }
       }
@@ -138,34 +161,11 @@ defmodule PlateSlateWeb.Schema.Query.MenuItemsTest do
         "errors" => [
           %{
             "locations" => [%{"column" => 13, "line" => 2}],
-            "message" => "Argument \"matching\" has invalid value 123."
+            "message" => "Argument \"filter\" has invalid value 123."
           }
         ]
       }
 
-      assert response == expected_response
-    end
-
-    test "given query, when has `matching` filter from a variable, should filter by the variable" do
-      # arrange
-      query = """
-      query($term: String){
-        menuItems(matching: $term) {
-          name
-        }
-      }
-      """
-
-      variables = %{"term" => "reu"}
-
-      # act
-      response =
-        build_conn()
-        |> get("/api", query: query, variables: variables)
-        |> json_response(200)
-
-      # assert
-      expected_response = %{"data" => %{"menuItems" => [%{"name" => "Reuben"}]}}
       assert response == expected_response
     end
   end
