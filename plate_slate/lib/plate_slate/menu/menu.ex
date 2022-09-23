@@ -146,10 +146,10 @@ defmodule PlateSlate.Menu do
         from q in query, where: q.price <= ^price
 
       {:added_after, date}, query ->
-        from q in query, where: q.added_on  >= ^date
+        from q in query, where: q.added_on >= ^date
 
       {:added_before, date}, query ->
-        from q in query, where: q.added_on  <= ^date
+        from q in query, where: q.added_on <= ^date
 
       {:category, category_name}, query ->
         from q in query,
@@ -242,5 +242,18 @@ defmodule PlateSlate.Menu do
   """
   def change_item(%Item{} = item) do
     Item.changeset(item, %{})
+  end
+
+  @search [Item, Category]
+  def search(term) do
+    pattern = "%#{term}%"
+    Enum.flat_map(@search, &search_ecto(&1, pattern))
+  end
+
+  defp search_ecto(ecto_schema, pattern) do
+    ecto_schema
+    |> from()
+    |> where([q], ilike(q.name, ^pattern) or ilike(q.description, ^pattern))
+    |> Repo.all()
   end
 end

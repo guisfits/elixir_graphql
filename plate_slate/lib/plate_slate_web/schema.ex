@@ -22,5 +22,11 @@ defmodule PlateSlateWeb.Schema do
 
       resolve(&MenuResolver.menu_items/3)
     end
+
+    @desc "search for category or menu_items"
+    field :search, list_of(:search_result) do
+      arg :matching, non_null(:string)
+      resolve(&MenuResolver.search/3)
+    end
   end
 end
