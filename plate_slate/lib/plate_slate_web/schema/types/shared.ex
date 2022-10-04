@@ -20,4 +20,23 @@ defmodule PlateSlateWeb.Schema.Types.Shared do
       Date.to_iso8601(date)
     end)
   end
+
+  scalar :decimal do
+    parse(fn
+      %{value: value}, _ ->
+        Decimal.parse(value)
+        |> case do
+          {decimal, _} ->
+            {:ok, decimal}
+
+          :error ->
+            :error
+        end
+
+      _, _ ->
+        :error
+    end)
+
+    serialize(&to_string/1)
+  end
 end

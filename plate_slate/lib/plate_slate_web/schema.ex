@@ -9,7 +9,7 @@
 defmodule PlateSlateWeb.Schema do
   use Absinthe.Schema
 
-  alias PlateSlateWeb.Resolvers.Menu, as: MenuResolver
+  alias PlateSlateWeb.Resolvers
 
   import_types(__MODULE__.Types.Menu)
   import_types(__MODULE__.Types.Shared)
@@ -20,13 +20,20 @@ defmodule PlateSlateWeb.Schema do
       arg(:filter, :menu_item_filter)
       arg(:order, type: :sort_order, default_value: :asc)
 
-      resolve(&MenuResolver.menu_items/3)
+      resolve(&Resolvers.Menu.menu_items/3)
     end
 
     @desc "search for category or menu_items"
     field :search, list_of(:search_result) do
       arg :matching, non_null(:string)
-      resolve(&MenuResolver.search/3)
+      resolve(&Resolvers.Menu.search/3)
+    end
+  end
+
+  mutation do
+    field :create_menu_item, :menu_item do
+      arg :input, non_null(:menu_item_input)
+      resolve &Resolvers.Menu.create_item/3
     end
   end
 end
