@@ -13,6 +13,7 @@ defmodule PlateSlateWeb.Schema do
 
   import_types(__MODULE__.Types.Menu)
   import_types(__MODULE__.Types.Shared)
+  import_types(__MODULE__.Types.Ordering)
 
   query do
     @desc "get menu items"
@@ -34,6 +35,11 @@ defmodule PlateSlateWeb.Schema do
     field :create_menu_item, :menu_item do
       arg :input, non_null(:menu_item_input)
       resolve &Resolvers.Menu.create_item/3
+    end
+
+    field :plate_order, :order_result do
+      arg :input, non_null(:place_order_input)
+      resolve &Resolvers.Ordering.place_order/3
     end
   end
 end
